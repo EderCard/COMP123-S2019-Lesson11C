@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace COMP123_S2019_Lesson11C
 {
@@ -54,19 +55,59 @@ namespace COMP123_S2019_Lesson11C
         {
             // TODO: This line of code loads data into the 'sectionCDatabaseDataSet.StudentTable' table. You can move, or remove it, as needed.
             this.studentTableTableAdapter.Fill(this.sectionCDatabaseDataSet.StudentTable);
-
         }
 
-        private void ShowDataButton_Click(object sender, EventArgs e)
+        private void NextButton_Click(object sender, EventArgs e)
         {
-            var StudentList =
-                from student in this.sectionCDatabaseDataSet.StudentTable
-                select student;
+            Program.studentInfoForm.Show();
+            this.Hide();
+        }
 
-            foreach (var student in StudentList.ToList())
+        
+        private void StudentDataGridView_SelectionChanged(object sender, EventArgs e)
+        {
+            //local variables that are used as aliases
+            var currentCell = StudentDataGridView.CurrentCell;
+            var rowIndex = StudentDataGridView.CurrentCell.RowIndex;
+            var currentRow = StudentDataGridView.Rows[rowIndex];
+            var columnCount = StudentDataGridView.ColumnCount;
+            var cells = currentRow.Cells;
+
+            currentRow.Selected = true;
+
+            string outputString = ""; //or string.Empty
+
+            for (int index = 0; index < columnCount; index++)
             {
-                Debug.WriteLine("Student Id: " + student.StudentId + "Last Name:"+ student.LastName);
+                outputString += cells[index].Value + " ";
             }
+
+            SelectionLabel.Text = outputString;
+
+            Program.student.id = int.Parse(cells[(int)studentField.ID].Value.ToString());
+            Program.student.StudentID = cells[(int)studentField.STUDENT_ID].Value.ToString();
+            Program.student.FirstName = cells[(int)studentField.FIRST_NAME].Value.ToString();
+            Program.student.LastName = cells[(int)studentField.LAST_NAME].Value.ToString();
+        }
+
+        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // open stream to write
+            using (StreamWriter outputStream = new StreamWriter(
+                File.Open("Student.txt", FileMode.Create)))
+            {
+                // write stuff to the file
+                outputStream.WriteLine(Program.student.id);
+                outputStream.WriteLine(Program.student.StudentID);
+                outputStream.WriteLine(Program.student.FirstName);
+                outputStream.WriteLine(Program.student.LastName);
+
+                //cleanup
+                outputStream.Close();
+                outputStream.Dispose();
+            }
+            MessageBox.Show("File saved successfuly!", "Saving...",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
