@@ -92,22 +92,73 @@ namespace COMP123_S2019_Lesson11C
 
         private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // open stream to write
-            using (StreamWriter outputStream = new StreamWriter(
-                File.Open("Student.txt", FileMode.Create)))
-            {
-                // write stuff to the file
-                outputStream.WriteLine(Program.student.id);
-                outputStream.WriteLine(Program.student.StudentID);
-                outputStream.WriteLine(Program.student.FirstName);
-                outputStream.WriteLine(Program.student.LastName);
+            //configure the file dialog
+            StudentSaveFileDialog.FileName = "Student.txt";
+            StudentSaveFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+            StudentSaveFileDialog.Filter = "Text files (*.txt)|*.txt| All files (*.*)|*.*";
 
-                //cleanup
-                outputStream.Close();
-                outputStream.Dispose();
+            //open the file dialog
+            var result = StudentSaveFileDialog.ShowDialog();
+            if (result != DialogResult.Cancel)
+            {
+                // open stream to write
+                using (StreamWriter outputStream = new StreamWriter(
+                    File.Open(StudentSaveFileDialog.FileName, FileMode.Create)))
+                {
+                    // write stuff to the file
+                    outputStream.WriteLine(Program.student.id.ToString());
+                    outputStream.WriteLine(Program.student.StudentID);
+                    outputStream.WriteLine(Program.student.FirstName);
+                    outputStream.WriteLine(Program.student.LastName);
+
+                    //cleanup
+                    outputStream.Close();
+                    outputStream.Dispose();
+                }
+                //give feedback to the user that the file has been saved
+                //this is a "modal" form
+                MessageBox.Show("File saved successfuly!", "Saving...",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            MessageBox.Show("File saved successfuly!", "Saving...",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void OpenToolStripButton_Click(object sender, EventArgs e)
+        {
+            //configure the file dialog
+            StudentOpenFileDialog.FileName = "Student.txt";
+            StudentOpenFileDialog.InitialDirectory = Directory.GetCurrentDirectory();
+            StudentOpenFileDialog.Filter = "Text files (*.txt)|*.txt| All files (*.*)|*.*";
+
+            //open the file dialog
+            var result = StudentOpenFileDialog.ShowDialog();
+            if (result != DialogResult.Cancel)
+            {
+                try
+                {
+                    //open stream for reading
+                    using (StreamReader inputStream = new StreamReader(
+                        File.Open(StudentOpenFileDialog.FileName, FileMode.Open)))
+                    {
+                        //Read stuff from the file into the Student object
+                        Program.student.id = int.Parse(inputStream.ReadLine());
+                        Program.student.StudentID = inputStream.ReadLine();
+                        Program.student.FirstName = inputStream.ReadLine();
+                        Program.student.LastName = inputStream.ReadLine();
+
+                        //Cleanup
+                        inputStream.Close();
+                        inputStream.Dispose();
+                    }
+                    NextButton_Click(sender, e);
+                }
+                catch (Exception exception)
+                {
+                    Debug.WriteLine(exception.Message);
+
+                    MessageBox.Show("Error " + exception.Message, "ERROR",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }
